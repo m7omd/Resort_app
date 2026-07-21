@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "235330488242",
+    "project_id": "al-jawhara-resort",
+    "storage_bucket": "al-jawhara-resort.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:235330488242:android:a0461ce49757a6c33606ab",
+        "android_client_info": {
+          "package_name": "com.example.resort_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBio__V100vhCD77xrKuHg9-Jh2emAmhms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
