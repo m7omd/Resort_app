@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:mime/mime.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import '../../config/environment/env_helper.dart';
 import '../data/data_source/local/cache_helper.dart';
 import '../utils/app_constant.dart';
 import 'dio_logger.dart';
@@ -89,7 +88,7 @@ class ApiService {
     String? languageCode = CacheHelper.getLanguageCode() ?? 'en';
 
     _dio.options
-      ..baseUrl = EnvConfig.apiUrl
+      ..baseUrl = "EnvConfig.apiUrl"
       ..responseType = ResponseType.json
       ..connectTimeout = const Duration(seconds: 60)
       ..sendTimeout = const Duration(seconds: 60)

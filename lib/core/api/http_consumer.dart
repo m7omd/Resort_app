@@ -1,12 +1,11 @@
 import 'package:dio/dio.dart';
 
-import '../../config/environment/env_helper.dart';
 
 class MapClientConsumer {
   Future<dynamic> get(String path,
       {Map<String, dynamic>? queryParameters}) async {
     try {
-      Dio client = Dio(BaseOptions(baseUrl: EnvConfig.mapUrl));
+      Dio client = Dio(BaseOptions(baseUrl: "EnvConfig.mapUrl"));
 
       final response = await client.get(path, queryParameters: queryParameters);
       if (response.statusCode == 200) {

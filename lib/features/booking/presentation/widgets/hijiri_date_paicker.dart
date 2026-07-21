@@ -4,7 +4,7 @@ import 'package:table_calendar/table_calendar.dart';
 
 class HijriGregorianDatePickerBottomSheet extends StatefulWidget {
   final DateTime initialDate;
-  final List<DateTime> bookedDates; // قائمة التواريخ المحجوزة مسبقاً
+  final List<DateTime> bookedDates;
   final Function(DateTime selectedDate) onDateSelected;
 
   const HijriGregorianDatePickerBottomSheet({
@@ -27,19 +27,31 @@ class _HijriGregorianDatePickerBottomSheetState
   @override
   void initState() {
     super.initState();
-    _focusedDay = widget.initialDate;
-    _selectedDay = widget.initialDate;
+
+    // 1. نبدأ بالتاريخ المبدئي المُمرر
+    DateTime candidateDate = _normalizeDate(widget.initialDate);
+
+    // 2. لو كان التاريخ المبدئي (مثلاً اليوم 22) محجوزاً، ابحث عن أول يوم متاح بعده
+    while (_checkIsBooked(candidateDate)) {
+      candidateDate = candidateDate.add(const Duration(days: 1));
+    }
+
+    // 3. تعيين اليوم المختار ليكون اليوم المتاح فوراً
+    _selectedDay = candidateDate;
+    _focusedDay = candidateDate;
   }
 
-  // فحص هل اليوم محجوز أم لا (يتجاهل الوقت ويقارن اليوم/الشهر/السنة)
-  bool _isBooked(DateTime day) {
-    return widget.bookedDates.any((booked) =>
-    booked.year == day.year &&
-        booked.month == day.month &&
-        booked.day == day.day);
+  // دالة مساعدة لتطبيع التاريخ وإلغاء الساعات والدقائق
+  DateTime _normalizeDate(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
   }
 
-  // تحويل التاريخ إلى صيغة نصية هجرية
+  // فحص هل تاريخ معين محجوز أم لا
+  bool _checkIsBooked(DateTime day) {
+    final normalized = _normalizeDate(day);
+    return widget.bookedDates.any((booked) => _normalizeDate(booked) == normalized);
+  }
+
   String _formatHijri(DateTime date) {
     final hijri = HijriCalendar.fromDate(date);
     return '${hijri.hDay} ${hijri.longMonthName} ${hijri.hYear} هـ';
@@ -58,7 +70,6 @@ class _HijriGregorianDatePickerBottomSheetState
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // مقبض السحب الأعلى
           Container(
             width: 40,
             height: 4,
@@ -75,7 +86,6 @@ class _HijriGregorianDatePickerBottomSheetState
           ),
           const SizedBox(height: 8),
 
-          // عرض التاريخ المختار (ميلادي + هجري)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
@@ -93,22 +103,20 @@ class _HijriGregorianDatePickerBottomSheetState
           ),
           const SizedBox(height: 12),
 
-          // التقويم التفاعلي
           TableCalendar(
             locale: 'ar',
-            firstDay: DateTime.now(),
+            firstDay: DateTime.now().subtract(const Duration(days: 1)),
             lastDay: DateTime(DateTime.now().year, 12, 31),
             focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
 
-            // تعطيل الأيام المحجوزة ومنع الضغط عليها
-            enabledDayPredicate: (day) => !_isBooked(day),
+            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+            enabledDayPredicate: (day) => !_checkIsBooked(day),
 
             onDaySelected: (selectedDay, focusedDay) {
-              if (!_isBooked(selectedDay)) {
+              if (!_checkIsBooked(selectedDay)) {
                 setState(() {
-                  _selectedDay = selectedDay;
-                  _focusedDay = focusedDay;
+                  _selectedDay = _normalizeDate(selectedDay);
+                  _focusedDay = _normalizeDate(focusedDay);
                 });
               }
             },
@@ -119,14 +127,12 @@ class _HijriGregorianDatePickerBottomSheetState
               titleTextStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
 
-            // تخصيص شكل أيام الشهر (الهجري والميلادي والدائرة الحمراء للمحجوز)
             calendarBuilders: CalendarBuilders(
               defaultBuilder: (context, day, focusedDay) => _buildDayCell(day, isSelected: false),
               selectedBuilder: (context, day, focusedDay) => _buildDayCell(day, isSelected: true),
               todayBuilder: (context, day, focusedDay) => _buildDayCell(day, isToday: true),
               disabledBuilder: (context, day, focusedDay) {
-                // شكل الأيام المحجوزة
-                if (_isBooked(day)) {
+                if (_checkIsBooked(day)) {
                   return _buildBookedDayCell(day);
                 }
                 return null;
@@ -136,7 +142,6 @@ class _HijriGregorianDatePickerBottomSheetState
 
           const SizedBox(height: 16),
 
-          // زر التأكيد
           SizedBox(
             width: double.infinity,
             height: 48,
@@ -157,13 +162,12 @@ class _HijriGregorianDatePickerBottomSheetState
     );
   }
 
-  // بناء خلية اليوم الطبيعي أو المختار
   Widget _buildDayCell(DateTime day, {bool isSelected = false, bool isToday = false}) {
     final hijriDay = HijriCalendar.fromDate(day).hDay;
     const Color primaryColor = Color(0xFF0D5D6D);
 
     return Container(
-      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: isSelected
             ? primaryColor
@@ -174,20 +178,18 @@ class _HijriGregorianDatePickerBottomSheetState
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // اليوم الميلادي
           Text(
             '${day.day}',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 13,
               fontWeight: FontWeight.bold,
               color: isSelected ? Colors.white : Colors.black87,
             ),
           ),
-          // اليوم الهجري
           Text(
             '$hijriDay',
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 9,
               color: isSelected ? Colors.white70 : Colors.grey[600],
             ),
           ),
@@ -196,7 +198,6 @@ class _HijriGregorianDatePickerBottomSheetState
     );
   }
 
-  // بناء خلية اليوم المحجوز (دائرة حمراء)
   Widget _buildBookedDayCell(DateTime day) {
     final hijriDay = HijriCalendar.fromDate(day).hDay;
 

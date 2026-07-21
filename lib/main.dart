@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'app.dart';
-import 'config/environment/env_helper.dart';
 import 'core/data/data_source/local/cache_helper.dart';
 import 'core/utils/imports.dart';
 import 'firebase_options.dart';

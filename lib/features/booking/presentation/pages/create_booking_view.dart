@@ -39,17 +39,56 @@ class _CreateBookingViewState extends State<CreateBookingView> {
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    // فحص وتحديث التاريخ لأول يوم متاح بمجرد فتح الشاشة
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final bookedDates = context.read<BookingCubit>().bookedDates;
+      setState(() {
+        _selectedDate = _getFirstAvailableDate(bookedDates);
+      });
+    });
+  }
+
+  // دالة تفحص التواريخ وترجع أول يوم متاح ابتداءً من اليوم
+  DateTime _getFirstAvailableDate(List<DateTime> bookedDates) {
+    DateTime candidate = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    DateTime normalize(DateTime d) => DateTime(d.year, d.month, d.day);
+
+    // طالما اليوم محجوز، انتقل لليوم التالي
+    while (bookedDates.any((booked) => normalize(booked) == candidate)) {
+      candidate = candidate.add(const Duration(days: 1));
+    }
+    return candidate;
+  }
+
   PaymentStatus _paymentStatus = PaymentStatus.unpaid;
   // أضف هذه الدالة داخل _CreateBookingViewState لتشغيل التقويم
   void _showDatePickerDialog(List<DateTime> bookedDates) {
+    // 1. دالة لتطبيع التواريخ وإلغاء الساعات والدقائق للمقارنة الدقيقة
+    DateTime normalize(DateTime d) => DateTime(d.year, d.month, d.day);
+    // 2. فحص التاريخ الحالي: لو محجوز ابحث عن أول يوم متاح
+    DateTime validDate = normalize(_selectedDate);
+    while (bookedDates.any((booked) => normalize(booked) == validDate)) {
+      validDate = validDate.add(const Duration(days: 1));
+    }
+    // 3. تحديث الشاشة الرئيسية فوراً بالتاريخ المتاح قبل أو عند فتح التقويم
+    if (normalize(_selectedDate) != validDate) {
+      setState(() {
+        _selectedDate = validDate;
+      });
+    }
+
+    // 4. عرض الـ BottomSheet بالتاريخ المتاح الجديد
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (context) {
         return HijriGregorianDatePickerBottomSheet(
-          initialDate: _selectedDate,
-          bookedDates: bookedDates, // تمرير التواريخ المحجوزة
+          initialDate: validDate,
+          bookedDates: bookedDates,
           onDateSelected: (date) {
             setState(() {
               _selectedDate = date;

@@ -70,7 +70,7 @@ class StaticsScreen extends StatelessWidget {
                   // 2. كارت إجمالي الدخل المتوقع
                   _buildStatCard(
                     title: "إجمالي الدخل المتوقع",
-                    value: "${totalExpectedIncome.toStringAsFixed(0)} ج.م",
+                    value: "${totalExpectedIncome.toStringAsFixed(0)} ريال ",
                     isBig: true,
                   ),
                   const SizedBox(height: 12),
@@ -82,7 +82,7 @@ class StaticsScreen extends StatelessWidget {
                       Expanded(
                         child: _buildStatCard(
                           title: "المبلغ المتبقي",
-                          value: "${totalRemainingIncome.toStringAsFixed(0)} ج.م",
+                          value: "${totalRemainingIncome.toStringAsFixed(0)} ريال ",
                           valueColor: const Color(0xFFC53030), // لون أحمر غامق
                           icon: const Icon(Icons.warning_amber_rounded, color: Color(0xFFC53030), size: 20),
                         ),
@@ -93,7 +93,7 @@ class StaticsScreen extends StatelessWidget {
                       Expanded(
                         child: _buildStatCard(
                           title: "المبلغ المستلم",
-                          value: "${totalReceivedIncome.toStringAsFixed(0)} ج.م",
+                          value: "${totalReceivedIncome.toStringAsFixed(0)} ريال ",
                           valueColor: const Color(0xFF2F855A), // لون أخضر غامق
                           icon: const Icon(Icons.check_circle_rounded, color: Color(0xFF2F855A), size: 20),
                         ),
